@@ -21,6 +21,3 @@ def start_up():
     add_record.pack()
 
     screen.mainloop()
-
-
-start_up()
