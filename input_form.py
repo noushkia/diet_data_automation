@@ -1,7 +1,7 @@
 from datetime import datetime
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
-from add_file import add_patient_file
+from add_file import add_patient_file, generate_id
 
 CHAR_INPUT_HEIGHT = 2
 CHAR_INPUT_WIDTH = 10
@@ -17,9 +17,14 @@ def register_user(screen, context, char_data, text_data):
     for key in char_data:
         context[key] = screen.getvar(name=key)
 
-    # add_patient_file(context)
-    print(context)
-    Label(screen, text="Record added successfully!", fg="green").pack()
+    for key, data in text_data.items():
+        context[key] = data.get("1.0", END)
+
+    try:
+        add_patient_file(context)
+        Label(screen, text="Record added successfully!", fg="green").pack()
+    except Exception as ex:
+        Label(screen, text=str(ex), fg="red").pack()
 
 
 def generate_input_form(screen):
@@ -41,7 +46,8 @@ def generate_input_form(screen):
         data = StringVar(name=key)
         data_entry = Entry(screen, textvariable=data)
         if key == "id":
-            data_entry.insert(END, "0006100")
+            new_id = generate_id()
+            data_entry.insert(END, new_id)
         elif key == "date":
             data_entry.insert(END, datetime.now().date().strftime("%d/%m/%Y"))
 
@@ -56,6 +62,7 @@ def generate_input_form(screen):
         Label(screen, text=title, bg="grey", height=TEXT_INPUT_HEIGHT, width=CHAR_INPUT_WIDTH, borderwidth=1,
               relief="solid").place(x=COL1_X, y=len(char_inputs) * 20 + 90 * i)
         data_entry.place(x=COL2_X, y=len(char_inputs) * 20 + 90 * i)
+        text_data[key] = data_entry
 
     Button(screen, text="Add Record", command=lambda: register_user(screen, context, char_data, text_data)).place(
         relx=.5,
