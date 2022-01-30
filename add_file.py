@@ -13,7 +13,7 @@ INITIAL_ID = "100"
 
 
 def add_patient_file(context):
-    tpl = DocxTemplate("patient_data.docx")
+    tpl = DocxTemplate("template.docx")
     tpl.render(context)
     tpl.save(PATH + str(context["id"]) + FORMAT)
 
