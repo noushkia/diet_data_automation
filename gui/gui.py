@@ -1,22 +1,22 @@
 from tkinter import *
-from patinet_form.input_form import generate_input_form
+from patient_form.input_form import create_patient_form
 
 
 def show_record_form():
     form_screen = Tk()
-    form_screen.title("Add doc")
-    form_screen.geometry("700x800")
+    form_screen.title("Add Patient Record")
+    form_screen.geometry("800x800")
 
-    generate_input_form(form_screen)
+    create_patient_form(form_screen)
 
 
-def start_up():
+def main():
     # open a window
     screen = Tk()
-    screen.title("Doc manage")
-    screen.geometry("700x700")
+    screen.title("Patient Manager")
+    screen.geometry("800x800")
 
-    # Button for adding a new record
+    # Adding a new record #
     add_record = Button(text="Add Patient Record", command=show_record_form)
     add_record.pack()
 
