@@ -2,3 +2,7 @@
 Patients
 Patient_data.dotx
 build
+
+# Build files
+main.spec
+dist/main

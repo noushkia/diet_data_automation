@@ -1,5 +1,5 @@
 from tkinter import *
-from patient_form.input_form import create_patient_form
+from new_patient.input_form import create_patient_form
 
 
 def show_record_form():
@@ -8,6 +8,19 @@ def show_record_form():
     form_screen.geometry("800x800")
 
     create_patient_form(form_screen)
+
+
+def show_patients_analysis():
+    analysis_screen = Tk()
+    analysis_screen.title("Patients Analysis")
+    analysis_screen.geometry("800x800")
+    pass
+
+
+def show_patients_list():
+    list_screen = Tk()
+    list_screen.title("Patients List")
+    list_screen.geometry("800x800")
 
 
 def main():

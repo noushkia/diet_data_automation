@@ -17,12 +17,13 @@ import os
 import pathlib
 
 from docxtpl import DocxTemplate
-from os import listdir
-from os.path import isfile, join
 import datetime
+from openpyxl import Workbook, load_workbook
+
 from date.date import gregorian_to_jalali
 
 RECORDS_PATH = "db/patients/"
+SUMMARIES_FILE = "patient_summaries.xlsx"
 FORMAT = ".docx"
 INITIAL_ID = "001"
 
@@ -31,6 +32,54 @@ def add_patient_file(context):
     tpl = DocxTemplate("template.docx")
     tpl.render(context)
     tpl.save(RECORDS_PATH + str(context["id"]) + FORMAT)
+
+
+def add_patient_summary(context):
+    # Store patient summaries in an Excel file
+    summary_data = {
+        "id": context["id"],
+        "name": context["name"],
+        "city": context["city"],
+        "age": context["age"],
+        "occupation": context["occupation"],
+        "education": context["education"],
+        "height": context["height"],
+        "curr_weight": context["curr_weight"],
+        "prev_weight": context["prev_weight"],
+        "week": context["week"],
+        "twins": context["twins"],
+        "prev_preg": context["prev_preg"],
+        "curr_children": context["curr_children"],
+        "natural": context["natural"],
+        "abortion": context["abortion"],
+        "workout": context["workout"],
+        "diabetes": context["diabetes"]
+    }
+
+    summary_file_path = RECORDS_PATH + SUMMARIES_FILE
+
+    # Load the existing workbook or create a new one if it doesn't exist
+    try:
+        workbook = load_workbook(filename=summary_file_path)
+    except FileNotFoundError:
+        workbook = Workbook()
+
+    # Get the worksheet or create a new one
+    if "Sheet1" in workbook.sheetnames:
+        worksheet = workbook["Sheet1"]
+    else:
+        worksheet = workbook.active
+        worksheet.title = "Sheet1"
+
+    # Create the column headers if the worksheet is empty
+    if worksheet.max_row <= 1:
+        headers = list(summary_data.keys())
+        worksheet.append(headers)
+
+    # Append the new data as a single row
+    row_data = list(summary_data.values())
+    worksheet.append(row_data)
+    workbook.save(summary_file_path)
 
 
 def generate_id():
