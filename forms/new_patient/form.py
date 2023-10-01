@@ -3,7 +3,11 @@ import tkinter as tk
 
 from date.date import gregorian_to_jalali
 
-from new_patient.new_record import add_patient_file, generate_id, add_patient_summary
+from utils import add_patient_file, add_patient_summary, generate_id
+
+from forms.form_config import CHAR_INPUT_WIDTH, LONG_CHAR_INPUT_WIDTH, LABEL_WIDTH, LABEL_INPUT_HEIGHT, COL1_X, \
+    COL2_X, COL3_X, COL4_X, VDIST, INPUT_HEIGHT
+
 
 def load_titles():
     return {
