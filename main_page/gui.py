@@ -1,5 +1,6 @@
 from tkinter import *
-from new_patient.input_form import create_patient_form
+
+from forms.new_patient.form import create_patient_form
 
 
 def show_record_form():

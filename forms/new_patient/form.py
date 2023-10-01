@@ -2,11 +2,13 @@ from datetime import datetime
 import tkinter as tk
 
 from date.date import gregorian_to_jalali
+from forms.basic_form import BasicForm, place_widgets
 
-from utils import add_patient_file, add_patient_summary, generate_id
+from forms.form_config import CHAR_INPUT_WIDTH, LONG_CHAR_INPUT_WIDTH, LABEL_WIDTH, COL1_X, COL2_X, COL3_X, COL4_X, \
+    VDIST
+from forms.new_patient.utils import generate_id, add_patient_file, add_patient_summary
 
-from forms.form_config import CHAR_INPUT_WIDTH, LONG_CHAR_INPUT_WIDTH, LABEL_WIDTH, LABEL_INPUT_HEIGHT, COL1_X, \
-    COL2_X, COL3_X, COL4_X, VDIST, INPUT_HEIGHT
+TEXT_INPUTS = {"natural", "workout", "sleep_sched", "meal_time", "diabetes"}
 
 
 def load_titles():
@@ -42,26 +44,9 @@ def load_titles():
     }
 
 
-def place_widgets(label, input_entry, label_x, label_y, entry_x, entry_y, entry_width):
-    label.place(x=label_x, y=label_y)
-    input_entry.place(x=entry_x, y=entry_y, height=INPUT_HEIGHT, width=entry_width)
-
-
-class PatientForm:
+class PatientForm(BasicForm):
     def __init__(self, screen, titles):
-        self.screen = screen
-        self.titles = titles
-        self.context = {}
-
-    def _create_input_entry(self, key):
-        input_key = tk.StringVar(name=key)
-        input_entry = tk.Entry(self.screen, textvariable=input_key, justify=tk.RIGHT, borderwidth=1, relief="solid",
-                               )
-        return input_key, input_entry
-
-    def _create_label(self, key, label_width):
-        return tk.Label(self.screen, text=self.titles[key], bg="gray55", height=LABEL_INPUT_HEIGHT,
-                        width=label_width, borderwidth=1, relief="solid")
+        super().__init__(screen, titles)
 
     def create_form(self):
         x_pos = [COL1_X, COL2_X, COL3_X, COL4_X]

@@ -1,7 +1,8 @@
+.idea
+
 # Patients data
-Patients
-Patient_data.dotx
 build
+db
 
 # Build files
 main.spec
