@@ -4,8 +4,14 @@
 
 Need tkinter as well as the following packages:
 Install the following packages:
-`sudo apt-get install python3-tk
-`pip install -r requirements.txt
+
+```bash
+sudo apt-get install python3-tk
+```
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Introduction
 
@@ -26,4 +32,11 @@ The app currently has the following features:
 
 To generate .exe file, type the following command in the terminal:
 
-`pyinstaller.exe --onefile --icon=icon.ico main.py`
+1. Install `pyinstaller`:
+   ```bash
+   pip install pyinstaller
+   ```
+2. Run:
+```bash
+pyinstaller.exe --onefile --icon=icon.ico main.py`
+```
