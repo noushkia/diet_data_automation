@@ -28,8 +28,15 @@ FORMAT = ".docx"
 INITIAL_ID = "001"
 
 
+def calculate_bmi(weight, height):
+    return weight / (height ** 2)
+
+
 def add_patient_file(context):
     tpl = DocxTemplate("template.docx")
+    bmi = calculate_bmi(context["bmi_weight"], context["height"])
+    context["bmi"] = f"{bmi:.2f}"
+
     tpl.render(context)
     tpl.save(RECORDS_PATH + str(context["id"]) + FORMAT)
 
@@ -39,21 +46,21 @@ def add_patient_summary(context):
     summary_data = {
         "id": context["id"],
         "name": context["name"],
-        "city": context["city"],
+        "birthplace": context["birthplace"],
         "age": context["age"],
         "occupation": context["occupation"],
-        "education": context["education"],
+        # "education": context["education"],
         "height": context["height"],
-        "curr_weight": context["curr_weight"],
-        "prev_weight": context["prev_weight"],
-        "week": context["week"],
-        "twins": context["twins"],
-        "prev_preg": context["prev_preg"],
-        "curr_children": context["curr_children"],
-        "natural": context["natural"],
-        "abortion": context["abortion"],
-        "workout": context["workout"],
-        "diabetes": context["diabetes"]
+        "weight": context["weight"],
+        # "prev_weight": context["prev_weight"],
+        # "week": context["week"],
+        # "twins": context["twins"],
+        # "prev_preg": context["prev_preg"],
+        # "curr_children": context["curr_children"],
+        # "natural": context["natural"],
+        # "abortion": context["abortion"],
+        # "workout": context["workout"],
+        # "diabetes": context["diabetes"]
     }
 
     summary_file_path = RECORDS_PATH + SUMMARIES_FILE
@@ -94,7 +101,10 @@ def generate_id():
         return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
 
     latest_file = max(patients_files, key=os.path.getmtime)
-    last_year, last_month, last_id = latest_file.stem.split("_")
+    try:
+        last_year, last_month, last_id = latest_file.stem.split("_")
+    except ValueError:  # .docx file name formats are invalid
+        return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
 
     # Check if the last record is from the current month
     if str(curr_date.year)[2:4] == last_year and f'{curr_date.month:02d}' == last_month:

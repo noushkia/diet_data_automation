@@ -8,39 +8,36 @@ from forms.form_config import CHAR_INPUT_WIDTH, LONG_CHAR_INPUT_WIDTH, LABEL_WID
     VDIST
 from forms.new_patient.utils import generate_id, add_patient_file, add_patient_summary
 
-TEXT_INPUTS = {"natural", "workout", "sleep_sched", "meal_time", "diabetes"}
+TEXT_INPUTS = {"meal_times", "sleep", "complaint", "allergies", "drug_history", "medical_history", "test_result",
+               "plan", "meal_pref"}
 
 
 def load_titles():
     return {
-        "id": "id",
-        "name": "First Name Last Name",
-        "city": "City",
-        "date": "Visit Date",
-        "age": "Age",
+        "name": "Name",
+        "id": "File No.",
+        "tel": "Tel.",
+        "date": "Date",
         "occupation": "Occupation",
-        "education": "Education",
-        "height": "Height",
-        "curr_weight": "Current Weight",
-        "prev_weight": "Pre-pregnancy Weight",
-        "goal": "Goal of Diet",
-        "week": "Week of Pregnancy",
-        "twins": "Single or Twins",
-        "prev_preg": "Previous Pregnancies",
-        "curr_children": "Current Children",
-        "natural": "Natural or C-section",
-        "sickness": "Significant Sickness",
-        "abortion": "Abortion",
-        "workout": "Daily Workout",
-        "diabetes": "Diabetes",
-        "medicine": "Medicine",
-        "supplement": "Supplements",
+        "ref": "Referrer",
+        "birthplace": "Place of Birth",
+        "age": "Age",
         "email": "Email Address",
+        "height": "Height",
+        "bmi_weight": "BMI Weight",
+        "weight": "Weight",
+        "normal_weight": "Normal Weight",
+        "physical": "Physical Activity",
+        "goal": "Goal of Diet",
+        "meal_times": "Meal Times",
+        "meal_pref": "Meal Preference",
+        "sleep": "Sleep Sched.",
+        "complaint": "CC",
         "allergies": "Allergies",
-        "bad_food": "Foods You Dislike",
-        "fav_food": "Foods You Like",
-        "sleep_sched": "Sleep Schedule",
-        "meal_time": "Meal Times"
+        "drug_history": "Drug History",
+        "medical_history": "PMH",
+        "test_result": "Test Result",
+        "plan": "Plans",
     }
 
 

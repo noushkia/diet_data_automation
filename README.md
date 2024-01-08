@@ -30,7 +30,7 @@ The app currently has the following features:
 
 ## Generating Executable File
 
-To generate .exe file, type the following command in the terminal:
+To generate .exe file **on Windows**, type the following commands in the terminal:
 
 1. Install `pyinstaller`:
    ```bash
