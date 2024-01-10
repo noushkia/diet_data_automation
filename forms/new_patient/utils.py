@@ -22,19 +22,25 @@ from openpyxl import Workbook, load_workbook
 
 from date.date import gregorian_to_jalali
 
-RECORDS_PATH = "db/patients/"
+RECORDS_PATH = "./db/patients/"
 SUMMARIES_FILE = "patient_summaries.xlsx"
 FORMAT = ".docx"
 INITIAL_ID = "001"
 
 
-def calculate_bmi(weight, height):
-    return weight / (height ** 2)
+def calculate_bmi(weight: int, height: int) -> float:
+    """
+    Calculate BMI given the weight and height.
+    :param weight: weight in kg
+    :param height: height in cm
+    :return: BMI
+    """
+    return weight / ((height / 100) ** 2)
 
 
 def add_patient_file(context):
     tpl = DocxTemplate("template.docx")
-    bmi = calculate_bmi(context["bmi_weight"], context["height"])
+    bmi = calculate_bmi(int(context["bmi_weight"]), int(context["height"]))
     context["bmi"] = f"{bmi:.2f}"
 
     tpl.render(context)
@@ -49,18 +55,8 @@ def add_patient_summary(context):
         "birthplace": context["birthplace"],
         "age": context["age"],
         "occupation": context["occupation"],
-        # "education": context["education"],
         "height": context["height"],
         "weight": context["weight"],
-        # "prev_weight": context["prev_weight"],
-        # "week": context["week"],
-        # "twins": context["twins"],
-        # "prev_preg": context["prev_preg"],
-        # "curr_children": context["curr_children"],
-        # "natural": context["natural"],
-        # "abortion": context["abortion"],
-        # "workout": context["workout"],
-        # "diabetes": context["diabetes"]
     }
 
     summary_file_path = RECORDS_PATH + SUMMARIES_FILE
