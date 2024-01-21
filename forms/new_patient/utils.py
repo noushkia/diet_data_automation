@@ -28,7 +28,7 @@ FORMAT = ".docx"
 INITIAL_ID = "001"
 
 
-def calculate_bmi(weight: int, height: int) -> float:
+def calculate_bmi(weight: float, height: float) -> float:
     """
     Calculate BMI given the weight and height.
     :param weight: weight in kg
@@ -40,7 +40,7 @@ def calculate_bmi(weight: int, height: int) -> float:
 
 def add_patient_file(context):
     tpl = DocxTemplate("template.docx")
-    bmi = calculate_bmi(int(context["bmi_weight"]), int(context["height"]))
+    bmi = calculate_bmi(float(context["bmi_weight"]), float(context["height"]))
     context["bmi"] = f"{bmi:.2f}"
 
     tpl.render(context)

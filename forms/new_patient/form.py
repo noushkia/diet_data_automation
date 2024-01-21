@@ -23,8 +23,8 @@ def load_titles():
         "birthplace": "Place of Birth",
         "age": "Age",
         "email": "Email Address",
-        "height": "Height",
-        "bmi_weight": "BMI Weight",
+        "height": "Height (cm)",
+        "bmi_weight": "BMI Weight (kg)",
         "weight": "Weight",
         "normal_weight": "Normal Weight",
         "physical": "Physical Activity",
@@ -91,7 +91,9 @@ class PatientForm(BasicForm):
             tk.Label(self.screen, text="Record Added Successfully", fg="green").pack()
             self.screen.destroy()
         except Exception as ex:
-            tk.Label(self.screen, text=str(ex), fg="red").pack()
+            error_label = tk.Label(self.screen, text=str(ex), fg="red",
+                                   font=("Arial", 14))  # Enlarge the font size here
+            error_label.pack()
 
 
 def create_patient_form(screen):
