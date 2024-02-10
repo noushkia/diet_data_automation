@@ -15,6 +15,7 @@
 """
 import os
 import pathlib
+import re
 
 from docxtpl import DocxTemplate
 import datetime
@@ -86,17 +87,22 @@ def add_patient_summary(context):
 
 
 def generate_id():
-    # find files with .docx extension
-    patients_files = [f for f in pathlib.Path(RECORDS_PATH).iterdir() if f.is_file() and f.name.endswith(FORMAT)]
-
-    # Convert to jalali date
     curr_date = gregorian_to_jalali(datetime.datetime.now())
 
-    # Check if there are no records
+    patients_files = [
+        f for f in pathlib.Path(RECORDS_PATH).iterdir()
+        if f.is_file() and re.match(fr"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_\d{{3}}\.docx$", f.name)
+    ]
+
     if not patients_files:
         return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
 
-    latest_file = max(patients_files, key=os.path.getmtime)
+    sorted_files = sorted(patients_files, key=lambda f: (
+        int(f.stem.split("_")[2])
+    ))
+
+    latest_file = sorted_files[-1]
+
     try:
         last_year, last_month, last_id = latest_file.stem.split("_")
     except ValueError:  # .docx file name formats are invalid
