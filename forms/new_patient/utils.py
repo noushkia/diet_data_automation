@@ -45,7 +45,11 @@ def add_patient_file(context):
     if not os.path.exists(RECORDS_PATH):
         os.makedirs(RECORDS_PATH)
 
-    tpl = DocxTemplate("template.docx")
+    # Use resource_path to find the template correctly in EXE mode
+    import main
+    template_path = main.resource_path("template.docx")
+    
+    tpl = DocxTemplate(template_path)
     
     try:
         weight = float(context.get("bmi_weight", 0) or 0)
