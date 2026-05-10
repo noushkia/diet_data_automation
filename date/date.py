@@ -1,8 +1,8 @@
 import datetime
 import tkinter as tk
-from tkinter import ttk
-import jdatetime
+
 import arabic_reshaper
+import jdatetime
 from bidi.algorithm import get_display
 
 # Common Farsi-friendly fonts on Linux
@@ -63,7 +63,7 @@ class JalaliDatePicker(tk.Toplevel):
         self.current_jdate = jdatetime.date.today()
         self.selected_date = None
 
-        self.geometry("600x400") # Increased again for safety
+        self.geometry("600x450")  # Increased again for safety
         self.resizable(False, False)
 
         self.setup_ui()
@@ -74,8 +74,9 @@ class JalaliDatePicker(tk.Toplevel):
         header.pack(fill="x", pady=10)
 
         tk.Button(header, text="<", command=self.prev_month, font=get_best_font(12)).pack(side="left", padx=5)
-        
-        self.month_label = tk.Label(header, text=reshape_text(self.current_jdate.strftime("%B %Y")), font=get_best_font(14))
+
+        self.month_label = tk.Label(header, text=reshape_text(self.current_jdate.strftime("%B %Y")),
+                                    font=get_best_font(14))
         self.month_label.pack(side="left", expand=True)
 
         tk.Button(header, text=">", command=self.next_month, font=get_best_font(12)).pack(side="right", padx=5)
@@ -107,7 +108,7 @@ class JalaliDatePicker(tk.Toplevel):
             next_month = jdatetime.date(self.current_jdate.year + 1, 1, 1)
         else:
             next_month = jdatetime.date(self.current_jdate.year, self.current_jdate.month + 1, 1)
-        
+
         days_in_month = (next_month - jdatetime.timedelta(days=1)).day
 
         row = 0
@@ -120,7 +121,7 @@ class JalaliDatePicker(tk.Toplevel):
             # Sunday (1) should be at col 5
             # ...
             # Friday (6) should be at col 0 (left-most)
-            btn.grid(row=row, column=6 - col_idx, padx=2, pady=2) 
+            btn.grid(row=row, column=6 - col_idx, padx=2, pady=2)
             col_idx += 1
             if col_idx > 6:
                 col_idx = 0

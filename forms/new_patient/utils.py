@@ -13,13 +13,12 @@
     The form is a tkinter window.
     The form is generated from the char_data dictionary.
 """
-import os
-import pathlib
-import re
 import csv
+import datetime
+import glob
+import os
 
 from docxtpl import DocxTemplate
-import datetime
 
 from date.date import gregorian_to_jalali
 
@@ -48,9 +47,9 @@ def add_patient_file(context):
     # Use resource_path to find the template correctly in EXE mode
     import main
     template_path = main.resource_path("template.docx")
-    
+
     tpl = DocxTemplate(template_path)
-    
+
     try:
         weight = float(context.get("bmi_weight", 0) or 0)
         height = float(context.get("height", 0) or 1)
@@ -100,30 +99,34 @@ def generate_id():
     if not os.path.exists(RECORDS_PATH):
         os.makedirs(RECORDS_PATH)
 
-    curr_date = gregorian_to_jalali(datetime.datetime.now())
+    curr_jdate = gregorian_to_jalali(datetime.datetime.now())
+    year_prefix = str(curr_jdate.year)[2:4]
+    month_prefix = f"{curr_jdate.month:02d}"
+    prefix = f"{year_prefix}_{month_prefix}"
 
-    patients_files = [
-        f for f in pathlib.Path(RECORDS_PATH).iterdir()
-        if f.is_file() and re.match(fr"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_\d{{3}}\.docx$", f.name)
-    ]
+    # Faster filtering: only look for files of the current year/month
+    search_pattern = os.path.join(RECORDS_PATH, f"{prefix}_*.docx")
+    matching_files = glob.glob(search_pattern)
 
-    if not patients_files:
-        return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
+    if not matching_files:
+        return f"{prefix}_{INITIAL_ID}"
 
-    sorted_files = sorted(patients_files, key=lambda f: (
-        int(f.stem.split("_")[2])
-    ))
+    # Extract IDs and find the maximum one (Faster than sorting the whole list)
+    ids = []
+    for f_path in matching_files:
+        # Get filename without extension
+        filename = os.path.basename(f_path)
+        stem = os.path.splitext(filename)[0]
+        try:
+            # Format is YY_MM_ID
+            parts = stem.split("_")
+            if len(parts) == 3:
+                ids.append(int(parts[2]))
+        except (ValueError, IndexError):
+            continue
 
-    latest_file = sorted_files[-1]
+    if not ids:
+        return f"{prefix}_{INITIAL_ID}"
 
-    try:
-        last_year, last_month, last_id = latest_file.stem.split("_")
-    except ValueError:  # .docx file name formats are invalid
-        return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
-
-    # Check if the last record is from the current month
-    if str(curr_date.year)[2:4] == last_year and f'{curr_date.month:02d}' == last_month:
-        return f"{last_year}_{last_month}_{str(int(last_id) + 1).zfill(3)}"
-    # If the last record is from another month
-    else:
-        return f"{str(curr_date.year)[2:4]}_{curr_date.month:02d}_{INITIAL_ID}"
+    next_id_num = max(ids) + 1
+    return f"{prefix}_{str(next_id_num).zfill(3)}"
