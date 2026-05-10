@@ -16,15 +16,15 @@
 import os
 import pathlib
 import re
+import csv
 
 from docxtpl import DocxTemplate
 import datetime
-from openpyxl import Workbook, load_workbook
 
 from date.date import gregorian_to_jalali
 
 RECORDS_PATH = "./db/patients/"
-SUMMARIES_FILE = "patient_summaries.xlsx"
+SUMMARIES_FILE = "patient_summaries.csv"
 FORMAT = ".docx"
 INITIAL_ID = "001"
 
@@ -36,57 +36,66 @@ def calculate_bmi(weight: float, height: float) -> float:
     :param height: height in cm
     :return: BMI
     """
+    if height == 0:
+        return 0
     return weight / ((height / 100) ** 2)
 
 
 def add_patient_file(context):
+    if not os.path.exists(RECORDS_PATH):
+        os.makedirs(RECORDS_PATH)
+
     tpl = DocxTemplate("template.docx")
-    bmi = calculate_bmi(float(context["bmi_weight"]), float(context["height"]))
-    context["bmi"] = f"{bmi:.2f}"
+    
+    try:
+        weight = float(context.get("bmi_weight", 0) or 0)
+        height = float(context.get("height", 0) or 1)
+        bmi = calculate_bmi(weight, height)
+        context["bmi"] = f"{bmi:.2f}"
+    except (ValueError, TypeError):
+        context["bmi"] = "N/A"
 
     tpl.render(context)
     tpl.save(RECORDS_PATH + str(context["id"]) + FORMAT)
 
 
 def add_patient_summary(context):
-    # Store patient summaries in an Excel file
+    if not os.path.exists(RECORDS_PATH):
+        os.makedirs(RECORDS_PATH)
+
+    # Store patient summaries in a CSV file (Lighter than Excel)
     summary_data = {
-        "id": context["id"],
-        "name": context["name"],
-        "birthplace": context["birthplace"],
-        "age": context["age"],
-        "occupation": context["occupation"],
-        "height": context["height"],
-        "weight": context["weight"],
+        "id": context.get("id", ""),
+        "name": context.get("name", ""),
+        "father_name": context.get("father_name", ""),
+        "age": context.get("age", ""),
+        "national_id": context.get("national_id", ""),
+        "mobile": context.get("mobile", ""),
+        "birthplace": context.get("birthplace", ""),
+        "occupation": context.get("occupation", ""),
+        "height": context.get("height", ""),
+        "weight": context.get("weight", ""),
+        "date": context.get("date", ""),
     }
 
     summary_file_path = RECORDS_PATH + SUMMARIES_FILE
+    file_exists = os.path.isfile(summary_file_path)
 
-    # Load the existing workbook or create a new one if it doesn't exist
+    # Append the new data to the CSV file
     try:
-        workbook = load_workbook(filename=summary_file_path)
-    except FileNotFoundError:
-        workbook = Workbook()
-
-    # Get the worksheet or create a new one
-    if "Sheet1" in workbook.sheetnames:
-        worksheet = workbook["Sheet1"]
-    else:
-        worksheet = workbook.active
-        worksheet.title = "Sheet1"
-
-    # Create the column headers if the worksheet is empty
-    if worksheet.max_row <= 1:
-        headers = list(summary_data.keys())
-        worksheet.append(headers)
-
-    # Append the new data as a single row
-    row_data = list(summary_data.values())
-    worksheet.append(row_data)
-    workbook.save(summary_file_path)
+        with open(summary_file_path, mode='a', newline='', encoding='utf-8-sig') as f:
+            writer = csv.DictWriter(f, fieldnames=summary_data.keys())
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(summary_data)
+    except Exception as e:
+        print(f"Error saving CSV summary: {e}")
 
 
 def generate_id():
+    if not os.path.exists(RECORDS_PATH):
+        os.makedirs(RECORDS_PATH)
+
     curr_date = gregorian_to_jalali(datetime.datetime.now())
 
     patients_files = [

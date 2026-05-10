@@ -1,7 +1,8 @@
 from datetime import datetime
 import tkinter as tk
+from tkinter import messagebox
 
-from date.date import gregorian_to_jalali
+from date.date import gregorian_to_jalali, JalaliDatePicker
 from forms.basic_form import BasicForm, place_widgets
 
 from forms.form_config import CHAR_INPUT_WIDTH, LONG_CHAR_INPUT_WIDTH, LABEL_WIDTH, COL1_X, COL2_X, COL3_X, COL4_X, \
@@ -11,8 +12,20 @@ from forms.new_patient.utils import generate_id, add_patient_file, add_patient_s
 TEXT_INPUTS = {"meal_times", "sleep", "complaint", "allergies", "drug_history", "medical_history", "test_result",
                "plan", "meal_pref"}
 
+NUMERIC_FIELDS = {"age", "national_id", "mobile", "height", "bmi_weight", "weight", "normal_weight"}
 
-def load_titles():
+
+def load_titles(lite=False):
+    if lite:
+        return {
+            "name": "نام و نام خانوادگی",
+            "father_name": "نام پدر",
+            "age": "سن",
+            "id": "شماره پرونده",
+            "national_id": "کد ملی",
+            "mobile": "شماره موبایل",
+            "date": "تاریخ",
+        }
     return {
         "name": "Name",
         "id": "File No.",
@@ -42,8 +55,9 @@ def load_titles():
 
 
 class PatientForm(BasicForm):
-    def __init__(self, screen, titles):
+    def __init__(self, screen, titles, lite=False):
         super().__init__(screen, titles)
+        self.lite = lite
 
     def create_form(self):
         x_pos = [COL1_X, COL2_X, COL3_X, COL4_X]
@@ -57,6 +71,15 @@ class PatientForm(BasicForm):
                 input_entry.insert(tk.END, new_id)
             elif key == "date":
                 input_entry.insert(tk.END, gregorian_to_jalali(datetime.now()).strftime("%Y/%m/%d"))
+                # Add calendar button
+                cal_btn = tk.Button(self.screen, text="📅", 
+                                    command=lambda k=key: JalaliDatePicker(self.screen, self.string_vars[k].set))
+                
+                # We'll place it manually after the widget is placed
+                self.date_cal_btn = cal_btn
+
+            if key in NUMERIC_FIELDS:
+                self.register_numeric_validation(key)
 
             entry_width = CHAR_INPUT_WIDTH
             # Text inputs are wider than char inputs
@@ -65,17 +88,32 @@ class PatientForm(BasicForm):
                 entry_width = LONG_CHAR_INPUT_WIDTH
 
             label_width = LABEL_WIDTH
-            label_x = x_pos[pos_tracker % 4]
-            entry_x = x_pos[pos_tracker % 4 + 1]
-            label_y = VDIST * (pos_tracker // 4)
-            entry_y = label_y
+            if self.lite:
+                # Swapped for RTL: Label on right (270), Entry on left (50)
+                entry_x = 50
+                label_x = 270
+                label_y = 50 + (pos_tracker * 40)
+                entry_y = label_y
+                entry_width = 200
+            else:
+                label_x = x_pos[pos_tracker % 4]
+                entry_x = x_pos[pos_tracker % 4 + 1]
+                label_y = VDIST * (pos_tracker // 4)
+                entry_y = label_y
 
             label = self._create_label(key, label_width)
             place_widgets(label, input_entry, label_x, label_y, entry_x, entry_y, entry_width)
+            
+            if key == "date":
+                self.date_cal_btn.place(x=entry_x + entry_width + 5, y=entry_y, height=35)
 
-            pos_tracker += 4 if key in TEXT_INPUTS else 2
+            if self.lite:
+                pos_tracker += 1
+            else:
+                pos_tracker += 4 if key in TEXT_INPUTS else 2
 
-        tk.Button(self.screen, text="Add Record", command=lambda: self._add_record()).place(
+        tk.Button(self.screen, text="Add Record", command=lambda: self._add_record(), 
+                  width=20, height=2, font=("Arial", 12, "bold")).place(
             relx=.5,
             rely=.9,
             anchor="center")
@@ -83,20 +121,47 @@ class PatientForm(BasicForm):
     def _add_record(self):
         # fetch inputted data
         for key in self.titles.keys():
-            self.context[key] = self.screen.getvar(name=key)
+            self.context[key] = self.string_vars[key].get()
+
+        # Fill missing keys for template if it's lite version
+        if self.lite:
+            all_full_titles = load_titles(lite=False)
+            for k in all_full_titles:
+                if k not in self.context:
+                    self.context[k] = ""
 
         try:
-            add_patient_file(self.context)
+            # For lite version, we might need to handle BMI differently or set defaults
+            if not self.lite:
+                add_patient_file(self.context)
+            else:
+                # Set dummy values for height/weight if they are not in lite form but needed by add_patient_file
+                if "height" not in self.context or not self.context["height"]:
+                    self.context["height"] = "1" # Avoid division by zero
+                if "bmi_weight" not in self.context or not self.context["bmi_weight"]:
+                    self.context["bmi_weight"] = "0"
+                add_patient_file(self.context)
+            
             add_patient_summary(self.context)
-            tk.Label(self.screen, text="Record Added Successfully", fg="green").pack()
-            self.screen.destroy()
+            messagebox.showinfo("Success", "Record Added Successfully")
+            
+            # Reset form and regenerate ID/Date
+            self.reset_form()
+            new_id = generate_id()
+            self.string_vars["id"].set(new_id)
+            self.string_vars["date"].set(gregorian_to_jalali(datetime.now()).strftime("%Y/%m/%d"))
+            
         except Exception as ex:
-            error_label = tk.Label(self.screen, text=str(ex), fg="red",
-                                   font=("Arial", 14))  # Enlarge the font size here
-            error_label.pack()
+            messagebox.showerror("Error", str(ex))
 
 
 def create_patient_form(screen):
-    titles = load_titles()
-    patient_form = PatientForm(screen, titles)
+    titles = load_titles(lite=False)
+    patient_form = PatientForm(screen, titles, lite=False)
+    patient_form.create_form()
+
+
+def create_lite_patient_form(screen):
+    titles = load_titles(lite=True)
+    patient_form = PatientForm(screen, titles, lite=True)
     patient_form.create_form()
