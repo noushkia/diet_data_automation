@@ -22,7 +22,7 @@ def show_lite_record_form(parent):
 def show_search_form(parent):
     form_screen = tk.Toplevel(parent)
     form_screen.title("Search")
-    form_screen.geometry("800x400")
+    form_screen.geometry("800x500")
     create_search_form(form_screen)
 
 

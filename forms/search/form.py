@@ -3,6 +3,8 @@ from tkinter import messagebox
 import os
 import csv
 import difflib
+import platform
+import subprocess
 
 from forms.basic_form import BasicForm, place_widgets
 from forms.form_config import CHAR_INPUT_WIDTH, LABEL_WIDTH, COL1_X, COL2_X, COL3_X, COL4_X, VDIST
@@ -50,6 +52,26 @@ class SearchForm(BasicForm):
             relx=.5,
             rely=.9,
             anchor="center")
+
+    def open_file(self, patient_id):
+        # Files are stored in the same directory as the summaries but named by ID
+        # Records are in ./db/patients/
+        records_dir = os.path.dirname(self.file_path)
+        file_path = os.path.join(records_dir, f"{patient_id}.docx")
+        
+        if not os.path.exists(file_path):
+            messagebox.showerror("Error", f"File not found: {file_path}")
+            return
+        
+        try:
+            if platform.system() == "Windows":
+                os.startfile(os.path.abspath(file_path))
+            elif platform.system() == "Darwin": # macOS
+                subprocess.run(["open", file_path])
+            else: # Linux
+                subprocess.run(["xdg-open", file_path])
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not open file: {e}")
 
     def search(self):
         # We now check for CSV or XLSX but prefer CSV for lite version
@@ -111,11 +133,30 @@ class SearchForm(BasicForm):
             self.results_text.insert(tk.END, header)
             self.results_text.insert(tk.END, "-" * 70 + "\n")
             for row in final_rows:
+                patient_id = str(row.get('id', ''))
                 name = str(row.get('name',''))
                 display_name = reshape_text(name)
+                age = str(row.get('age', ''))
+                date = str(row.get('date', ''))
+
                 # Note: align might be tricky with reshaped text, but let's try
-                res_str = f"{str(row.get('id','')):<15} | {display_name:<25} | {str(row.get('age','')):<5} | {str(row.get('date','')):<15}\n"
-                self.results_text.insert(tk.END, res_str)
+                id_part = f"{patient_id:<15} | "
+                name_part = f"{display_name:<25}"
+                rest_part = f" | {age:<5} | {date:<15}\n"
+
+                self.results_text.insert(tk.END, id_part)
+                
+                # Tag for hyperlink
+                tag_name = f"link_{patient_id}"
+                self.results_text.insert(tk.END, name_part, tag_name)
+                self.results_text.tag_config(tag_name, foreground="blue", underline=True)
+                
+                # Bindings for the hyperlink
+                self.results_text.tag_bind(tag_name, "<Button-1>", lambda e, pid=patient_id: self.open_file(pid))
+                self.results_text.tag_bind(tag_name, "<Enter>", lambda e: self.results_text.config(cursor="hand2"))
+                self.results_text.tag_bind(tag_name, "<Leave>", lambda e: self.results_text.config(cursor=""))
+                
+                self.results_text.insert(tk.END, rest_part)
         else:
             self.results_text.insert(tk.END, "No results found.")
 
