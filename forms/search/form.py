@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import os
 import csv
+import difflib
 
 from forms.basic_form import BasicForm, place_widgets
 from forms.form_config import CHAR_INPUT_WIDTH, LABEL_WIDTH, COL1_X, COL2_X, COL3_X, COL4_X, VDIST
@@ -73,25 +74,43 @@ class SearchForm(BasicForm):
                     row_id = str(row.get("id", ""))
                     row_name = str(row.get("name", ""))
 
+                    match_score = 0
                     match = False
+
                     if input_id and input_id in row_id:
                         match = True
-                    if input_name and input_name.lower() in row_name.lower():
-                        match = True
+                        match_score += 1.0
+
+                    if input_name:
+                        in_name_lower = input_name.lower()
+                        row_name_lower = row_name.lower()
+                        
+                        if in_name_lower in row_name_lower:
+                            match = True
+                            match_score += 1.0
+                        else:
+                            ratio = difflib.SequenceMatcher(None, in_name_lower, row_name_lower).ratio()
+                            if ratio > 0.4:
+                                match = True
+                                match_score += ratio
                     
                     if match:
-                        found_rows.append(row)
+                        found_rows.append((match_score, row))
         except Exception as e:
             messagebox.showerror("Error", f"Could not open database: {e}")
             return
 
+        # Sort found_rows by match_score descending
+        found_rows.sort(key=lambda x: x[0], reverse=True)
+        final_rows = [row for score, row in found_rows]
+
         # Display the found rows in the results text widget
         self.results_text.delete(1.0, tk.END)
-        if found_rows:
+        if final_rows:
             header = f"{'ID':<15} | {'Name':<25} | {'Age':<5} | {'Date':<15}\n"
             self.results_text.insert(tk.END, header)
             self.results_text.insert(tk.END, "-" * 70 + "\n")
-            for row in found_rows:
+            for row in final_rows:
                 name = str(row.get('name',''))
                 display_name = reshape_text(name)
                 # Note: align might be tricky with reshaped text, but let's try

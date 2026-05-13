@@ -40,13 +40,13 @@ def calculate_bmi(weight: float, height: float) -> float:
     return weight / ((height / 100) ** 2)
 
 
-def add_patient_file(context):
+def add_patient_file(context, template_name="template.docx"):
     if not os.path.exists(RECORDS_PATH):
         os.makedirs(RECORDS_PATH)
 
     # Use resource_path to find the template correctly in EXE mode
     import main
-    template_path = main.resource_path("template.docx")
+    template_path = main.resource_path(template_name)
 
     tpl = DocxTemplate(template_path)
 
@@ -70,10 +70,10 @@ def add_patient_summary(context):
     summary_data = {
         "id": context.get("id", ""),
         "name": context.get("name", ""),
-        "father_name": context.get("father_name", ""),
+        "father_name": context.get("fathers_name", context.get("father_name", "")),
         "age": context.get("age", ""),
-        "national_id": context.get("national_id", ""),
-        "mobile": context.get("mobile", ""),
+        "national_id": context.get("ssn", context.get("national_id", "")),
+        "mobile": context.get("phone_number", context.get("mobile", context.get("tel", ""))),
         "birthplace": context.get("birthplace", ""),
         "occupation": context.get("occupation", ""),
         "height": context.get("height", ""),

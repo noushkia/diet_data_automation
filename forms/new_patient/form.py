@@ -12,18 +12,18 @@ from forms.new_patient.utils import generate_id, add_patient_file, add_patient_s
 TEXT_INPUTS = {"meal_times", "sleep", "complaint", "allergies", "drug_history", "medical_history", "test_result",
                "plan", "meal_pref"}
 
-NUMERIC_FIELDS = {"age", "national_id", "mobile", "height", "bmi_weight", "weight", "normal_weight"}
+NUMERIC_FIELDS = {"age", "national_id", "mobile", "ssn", "phone_number", "height", "bmi_weight", "weight", "normal_weight"}
 
 
 def load_titles(lite=False):
     if lite:
         return {
-            "name": "نام و نام خانوادگی",
-            "father_name": "نام پدر",
-            "age": "سن",
             "id": "شماره پرونده",
-            "national_id": "کد ملی",
-            "mobile": "شماره موبایل",
+            "name": "نام و نام خانوادگی",
+            "age": "سن",
+            "ssn": "کد ملی",
+            "fathers_name": "نام پدر",
+            "phone_number": "شماره تماس",
             "date": "تاریخ",
         }
     return {
@@ -140,7 +140,7 @@ class PatientForm(BasicForm):
                     self.context["height"] = "1" # Avoid division by zero
                 if "bmi_weight" not in self.context or not self.context["bmi_weight"]:
                     self.context["bmi_weight"] = "0"
-                add_patient_file(self.context)
+                add_patient_file(self.context, template_name="template_lite.docx")
             
             add_patient_summary(self.context)
             messagebox.showinfo("Success", "Record Added Successfully")
